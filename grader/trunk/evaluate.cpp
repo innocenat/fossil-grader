@@ -135,7 +135,7 @@ void evaluator::readconf(char* pname)
   FILE *fp = fopen(confname,"r");
   if(fp!=NULL) {
     casecount = fullscore = 0;
-    timelimit = 2;
+    timelimit = 1.0;
     while(fgets(line,100,fp)!=NULL) {
       char topic[30];
       char value[20];
@@ -157,7 +157,7 @@ void evaluator::readconf(char* pname)
 	  free(outfname);
 	outfname = strdup(value);
       } else if(strcmp(topic,"timelimit:")==0)
-	sscanf(value,"%d",&timelimit);
+	sscanf(value,"%lf",&timelimit);
     }
     if(fullscore==0)
       fullscore=casecount;

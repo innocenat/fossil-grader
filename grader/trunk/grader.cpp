@@ -2,7 +2,7 @@
 #include "db_interface.h"
 #include "evaluate.h"
 
-#define CONFIG_FILE  "grader.cnf"
+#define CONFIG_FILE  "grader.conf"
 
 //#define CHOOSE_BEST_LANG 1
 
@@ -90,105 +90,91 @@ void grade(DB *db, char *user_id, char *prob_id)
 
 void gradequeue(DB *db)
 {
-	char user_id[100];
-	char prob_id[100];
-	int sub_num;
+  char user_id[100];
+  char prob_id[100];
+  int sub_num;
 
-	do {
-		fetchqueue(db,user_id,prob_id,&sub_num);
-		if(*user_id!='\0') {
-			printf("grading: %s/%s/%d\n",user_id,prob_id,sub_num);
-			grade(db,user_id,prob_id,sub_num);
-		}
-	} while(*user_id!='\0');
+  do {
+    fetchqueue(db,user_id,prob_id,&sub_num);
+    if(*user_id!='\0') {
+      printf("grading: %s/%s/%d\n",user_id,prob_id,sub_num);
+      grade(db,user_id,prob_id,sub_num);
+    }
+  } while(*user_id!='\0');
 }
 
 static bool iffileexist(char *fname)
 {
-	FILE *fp = fopen(fname,"r");
-
-	if(fp!=NULL) {
-		fclose(fp);
-		return 1;
-	} else
-		return 0;
+  FILE *fp = fopen(fname,"r");
+  
+  if(fp!=NULL) {
+    fclose(fp);
+    return 1;
+  } else
+    return 0;
 }
 
 bool checkexit()
 {
-	return iffileexist("exit");
+  return iffileexist("exit");
 }
 
 void stopgrader()
 {
-	FILE *fp = fopen("exit","w");
-	fclose(fp);
-	Sleep(2000);
-	remove("exit");
+  FILE *fp = fopen("exit","w");
+  fclose(fp);
+  Sleep(2000);
+  remove("exit");
 }
 
 void gradequeue()
 {
-	DB *db = connect_db();
-//	grade(db,"jittat","test",1);
-   char *moving_icon = "-\|/";
-   int counter = 0;
-	while(1) {
-		gradequeue(db);
-		Sleep(1000);
-		if(checkexit())
-			break;
-		printf("%c\r",moving_icon[counter]);
-		counter++;
-		if(counter>=strlen(moving_icon))
-		  	counter = 0;
-	}
-	close_db(db);
+  DB *db = connect_db();
+  char *moving_icon = "-\\|/";
+  int counter = 0;
+  while(1) {
+    gradequeue(db);
+    Sleep(1000);
+    if(checkexit())
+      break;
+    printf("%c\r",moving_icon[counter]);
+    counter++;
+    if(counter>=strlen(moving_icon))
+      counter = 0;
+  }
+  close_db(db);
 }
 
 void gradeone(char *user_id, char *prob_id)
 {
-	DB *db = connect_db();
-	grade(db,user_id,prob_id);
-	close_db(db);
+  DB *db = connect_db();
+  grade(db,user_id,prob_id);
+  close_db(db);
 }
 
 void gradeprob(char *prob_id)
 {
-	DB *db = connect_db();
-	MYSQL_RES *res;
-	MYSQL_ROW row;
-	int usercount;
-
-/*
-  FILE *fp=fopen("test.tex","w");
-	fprintf(fp,"\\documentclass[11pt]{article}\n");
-	fprintf(fp,"\\usepackage[thai]{babel}\n");
-	fprintf(fp,"\\usepackage{thswitch}\n");
-	fprintf(fp,"\\begin{document}\n");
-*/
-	
-	if(!mysql_query(db,"SELECT user_id,name FROM user_info WHERE type='C' OR type='A'")) {
-		res = mysql_store_result(db);
-		usercount = mysql_num_rows(res);
-		for(int i=0; i<usercount; i++) {
-			row = mysql_fetch_row(res);
-			printf("grading[%s]: %s\n",prob_id,row[0]);
-			grade(db,row[0],prob_id);
-			//fprintf(fp,"%s,%s\\\\\n",row[0],row[1]);
-		}
-		mysql_free_result(res);
-	}
-	close_db(db);	
-/*
-	fprintf(fp,"\\end{document}\n");
-	fclose(fp);
-*/
+  DB *db = connect_db();
+  MYSQL_RES *res;
+  MYSQL_ROW row;
+  int usercount;
+  
+  if(!mysql_query(db,"SELECT user_id,name FROM user_info WHERE type='C' OR type='A'")) {
+    res = mysql_store_result(db);
+    usercount = mysql_num_rows(res);
+    for(int i=0; i<usercount; i++) {
+      row = mysql_fetch_row(res);
+      printf("grading[%s]: %s\n",prob_id,row[0]);
+      grade(db,row[0],prob_id);
+    }
+    mysql_free_result(res);
+  }
+  close_db(db);	
 }
 
 void gradeuser(char *user_id)
 {
-	printf("sorry: incomplete feature\n");
+  printf("sorry: incomplete feature\n");
 }
 
 void gradeall()

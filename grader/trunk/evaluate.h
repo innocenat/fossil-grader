@@ -14,43 +14,42 @@
 
 class evaluator {
 private:
-	DB *db;
-	char* prob_id;
-	char* evname;
-	int casecount;
-	int fullscore;
-	int timelimit;
+  DB *db;
+  char* prob_id;
+  char* evname;
+  int casecount;
+  int fullscore;
+  double timelimit;
 
-	char* infname;
-	char* outfname;
+  char* infname;
+  char* outfname;
+  
+  int language;
+  
+  int test(int c, char* msg);
+  void copytestcase(int c);
+  // int copyandcompile(char* id, char* sect, int subnum);
+  void copyoutput(char* user_id);
+  void cleartestdir();
+  void savemessage(char* user_id);
 
-	int language;
-
-	int test(int c, char* msg);
-	void copytestcase(int c);
-//	int copyandcompile(char* id, char* sect,
-//										int subnum);
-	void copyoutput(char* user_id);
-	void cleartestdir();
-	void savemessage(char* user_id);
-
-	void fetchsource(char* user_id, int sub_num, char *fname);
-	bool fetchandcompile(char *user_id, int sub_num);
-
-	int getlanguage(char *fname);
-
+  void fetchsource(char* user_id, int sub_num, char *fname);
+  bool fetchandcompile(char *user_id, int sub_num);
+  
+  int getlanguage(char *fname);
+  
 public:
-	evaluator(DB *mydb = 0);
-	~evaluator();
-
-	void readconf(char* probname);
-	char* getevname();
-	int getcasecount() { return casecount; }
-	int getfullscore() { return fullscore; }
-
+  evaluator(DB *mydb = 0);
+  ~evaluator();
+  
+  void readconf(char* probname);
+  char* getevname();
+  int getcasecount() { return casecount; }
+  int getfullscore() { return fullscore; }
+  
   void forcelanguage(int l) {language = l;}
-
-	int evaluate(char* id, int sub_num, char* mlog=0);
+  
+  int evaluate(char* id, int sub_num, char* mlog=0);
 };
 
 #endif

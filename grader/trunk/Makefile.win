@@ -1,8 +1,8 @@
 # Project: grader
 # Makefile created by Dev-C++ 4.9.9.2
 
-CPP  = g++.exe -D__DEBUG__
-CC   = gcc.exe -D__DEBUG__
+CPP  = c:\dev-cpp\bin\g++.exe -D__DEBUG__
+CC   = c:\dev-cpp\bin\gcc.exe -D__DEBUG__
 WINDRES = windres.exe
 RES  = 
 OBJ  = grader.o evaluate.o db_interface.o execute.o $(RES)

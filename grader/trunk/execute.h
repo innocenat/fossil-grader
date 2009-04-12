@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int execute(char *exname, char *inname, char *outname, int t);
+int execute(char *exname, char *inname, char *outname, double t);
 int verify(char *vname, int c, char *msg);
 
 #ifdef __cplusplus

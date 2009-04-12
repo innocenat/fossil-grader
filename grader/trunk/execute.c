@@ -1,3 +1,8 @@
+/*
+This library is a modification from a program called trun, taken from
+an unknown source.  (FIX THIS)
+
+*/
 #include <windows.h>
 #include <tlhelp32.h>
 #include <stdio.h>
@@ -59,8 +64,10 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
     if(strstr(buffer,"16 bit")!=0) {
       NTVDMcrashed_found = true;
     }
-    if((strstr(buffer,".exe")!=0) && (strstr(buffer,"cmd.exe")==0)) {
+    if((strstr(buffer,".exe")!=0) && 
+       (strstr(buffer,"cmd.exe")==buffer)) {
       NTVDMcrashed_found = true;
+      printf("Title: %s\n",buffer);
     }
   }
   return TRUE;
@@ -181,7 +188,7 @@ void setstartupinfo(STARTUPINFO *si, char *inname, char *outname)
 }
 
 
-int execute(char *exname, char *inname, char *outname, int t)
+int execute(char *exname, char *inname, char *outname, double t)
 {
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
@@ -208,7 +215,7 @@ int execute(char *exname, char *inname, char *outname, int t)
     }
   //fprintf(stderr,"Process ID: %ld\n",pi.dwProcessId);
   //fprintf(stderr,"time limit = %d\n",t);
-  if(WaitForSingleObject( pi.hProcess, t*1000)==WAIT_TIMEOUT) {
+  if(WaitForSingleObject( pi.hProcess, (int)(t*1000)+1)==WAIT_TIMEOUT) {
     // need to kill...
     HANDLE hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, pi.dwProcessId);
     
