@@ -1,0 +1,21 @@
+This directory keeps various data for testing the grader.
+
+File listing
+------------
+- ev              : tasks for testing
+  - add           : read 2 integers and return result (timelimit = 1)
+- submissions     : sourcecode for testing
+  - add
+    - add.c       : correct implementation in C
+    - addcpp.cpp  : correct implementation in C++
+    - addloop.c   : code that loop, to test time out
+    - addcra.cpp  : code that crashes.   (TODO)
+
+
+How to test the grader
+----------------------
+1. Set up the submission web.
+2. Add the tasks and copy ev dir of that task to the real ev directory.
+3. Build scomp.exe from ../src/comparators and copy to real ev directory.
+3. Try submitting various source codes and see results.
+
