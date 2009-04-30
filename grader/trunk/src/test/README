@@ -19,3 +19,17 @@ How to test the grader
 3. Build scomp.exe from ../src/comparators and copy to real ev directory.
 3. Try submitting various source codes and see results.
 
+
+How to test _only_ the execution lib for grader
+----------------------------------------------- 
+If you only want to make sure that the execution library works fine,
+you can just use a batch file test_witn_trun.bat to do that, using the
+following steps.
+
+1. Compile trun.exe. (it is also included in the make file)
+2. Copy trun.exe to bin dir (i.e., bin\trun.exe)
+3. Run test_witn_trun.bat in test dir.  It will create a new file
+called test_witn_trun.local.bat.   
+4. Edit that file.  Provide correct option TCCOPT for tcc 
+(e.g., -Ic:\tc -Lc:\tc -ml).
+5. Run test_witn_trun.local.bat
