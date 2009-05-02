@@ -87,13 +87,15 @@ function listprob($id)
 {
   global $problist, $probcount;
 
+  echo "<ul>\n";
   for($i=0; $i<$probcount; $i++) {
-    echo ($i+1) . ". " . $problist[$i]['name'] . 
+    echo '<li>' . $problist[$i]['name'] . 
          " [" . $problist[$i]['prob_id'] . "]<br>\n";
     echo '<dd>';
     displayprobinfo($id, $problist[$i]['prob_id']);
-    echo "<br>\n";
+    echo "</dd></li>\n";
   }
+  echo "</ul>\n";
 }
 
 function displaymessage()
@@ -145,11 +147,11 @@ function displaysubmitbox($id, $proboption)
   echo <<<SUBMIT
   <form action="submit.php" method="post" enctype="multipart/form-data">
   <input type="hidden" name="id" value="$id">
-  <select name="probid">
+  Task: <select name="probid">
   $proboption
   </select>
-  <input type="file" name="code" size="20"><br />
-  <input type="submit" name="submit" value="submit">
+  Source: <input type="file" name="code" size="20"/>
+  <input type="submit" name="submit" value="submit"/>
   </form>
 <hr>
 SUBMIT;

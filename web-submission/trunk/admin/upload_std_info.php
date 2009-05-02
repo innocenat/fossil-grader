@@ -22,28 +22,31 @@ function findid($user_id)
 
 function update($user_id, $user_name, $passwd, $type, $group)
 {
-/*
   echo $user_id . " - " . $user_name . " (" . $type . " / " . $group . ") ";
-  $query = mysql_query("select * from user_info where user_id=\"$user_id\"");
-*/
 
-/*      
+  // find user
+  $query = mysql_query("select * from user_info where user_id=\"$user_id\"");
+  
   if(mysql_num_rows($query)!=0) {
-    $q = "update user_info set name=\"" . mysql_real_escape_string($user_name). "\", passwd=\"$passwd\"," .
-         " type='$type', grp='$group' " .
-         " where user_id=\"$user_id\""; 
+    // already exists.
+    $q = "update user_info set name=\"" . mysql_real_escape_string($user_name). "\", " .
+		 "passwd=\"" . mysql_real_escape_string($passwd) . "\", " .
+         "type='" . mysql_real_escape_string($type) . "', grp='" . mysql_real_escape_string($group) . "' " .
+         "where user_id=\"$user_id\""; 
     //    echo " cmd: " . $q;
-    echo "[updated] <br>";
+    echo "[updated] <br/>";
     mysql_query($q);
   } else {
     $q = "insert into user_info (user_id, name, passwd, type, grp) values " .
-         "(\"$user_id\",\"" . mysql_real_escape_string($user_name) . "\",\"$passwd\",\"$type\",\"$group\")";
+         "(\"$user_id\",\"" . mysql_real_escape_string($user_name) . "\",\"" . 
+		mysql_real_escape_string($passwd) . "\",\"" . mysql_real_escape_string($type) . "\",\"" . 
+		mysql_real_escape_string($group) . "\")";
     //     echo " cmd: " . $q;
     mysql_query($q);
-    echo "[added] <br>";
+    echo "[added] <br/>";
   }
-*/
 
+/*
   $uid=findid($user_id);
   if($uid!='')
     $q = "update user_info set name=\"$user_name\" where user_id='$uid'";
@@ -51,10 +54,12 @@ function update($user_id, $user_name, $passwd, $type, $group)
     $q = "insert into user_info (user_id,name) values ('$user_id','$user_name')";
   echo "[updated]: $q <br>";
     mysql_query($q);
+*/
 }
 
 function uploadfromfile($fname)
 {
+  $upload_count = 0;
   $linelist = file($fname);
   for($i = 0; $i<count($linelist); $i++) {
     $uinfo = explode(':',trim($linelist[$i]));
@@ -65,12 +70,14 @@ function uploadfromfile($fname)
     if($j<strlen($uinfo[0])) {
       $name = substr($uinfo[0],$j,strlen($uinfo[0])-$j);  
       //      echo $name . "," . $j . "<br>";
-      if(count($uinfo)==2) {
-        update($name, $uinfo[1], "","","");
-//        update($name, $uinfo[1], $uinfo[2], $uinfo[3], $uinfo[4]);
+      if(count($uinfo)==5) {
+        //update($name, $uinfo[1], "","","");
+        update($name, $uinfo[1], $uinfo[2], $uinfo[3], $uinfo[4]);
+		$upload_count++;
       }
     }
   }
+  echo "<b>Uploaded " . $upload_count . " users</b><br/>";
 }
 
 checkauthen();
@@ -80,23 +87,30 @@ if($_SESSION['type']!=USERTYPE_ADMIN) {
 }
 ?>
 <html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+</head>
+<body>
 <body>
 <?php
 if(isset($_POST['upload'])) {
-  echo "<b>uploaded new user info :</b> <hr>";
+  echo "<b>uploaded new user info :</b> <hr/>";
   if(($_FILES['stdfile']['size']>0) && ($_FILES['stdfile']['size']<=100000)) {
     connect_db();
     uploadfromfile($_FILES['stdfile']['tmp_name']);
     close_db();
   }
-  echo "<hr>";
+  echo "<hr/>";
 } 
 ?>
   <form method="post" enctype="multipart/form-data">
-  User info: <input type="file" name="stdfile" size="20">
-  <input type="submit" name="upload" value="upload">
+  User info: <input type="file" name="stdfile" size="20" /><input type="submit" name="upload" value="upload" />
   </form>
 
+  <b>Format:</b> one line per user: <br/>
+  &nbsp;&nbsp;&nbsp;&nbsp;<tt>username:name:password:type:group</tt><br/>
+  <tt>type</tt> is one of the following character: <tt>(C)</tt>ontestant,<tt>(S)</tt>uperviser,<tt>(A)</tt>dministrator<br/>
+  
   Back to <a href="../main.php">main page</a>
 
 </body>
