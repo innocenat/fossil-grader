@@ -17,12 +17,6 @@
 #define COPYSOLCMD      "copy %s%s\\%d.sol test > nul:"
 #define MOVEOLDTESTCMD  "copy/y test\\*.* old-test > nul:"
 #define DELTESTDIR      "del/q test\\*.*"
-#define COMPILECMD_C    "cmd.exe /c bcc -Dsystem=_SUS1_ -Dint86=_SUS2_ -Dintr=_SUS3_ -Ic:\\borlandc\\include -Lc:\\borlandc\\lib %s.c > compile.msg"
-#define COMPILECMD_CPP  "cmd.exe /c bcc  -Dsystem=_SUS1_ -Dint86=_SUS2_ -Dintr=_SUS3_ -P -Ic:\\borlandc\\include -Lc:\\borlandc\\lib %s.c > compile.msg"
-//#define COMPILECMD      "cmd.exe /c tcc %s.cpp"
-//#define COMPILECMD_C    "cmd.exe /c tcc %s.c > compile.msg"
-//#define COMPILECMD_CPP  "cmd.exe /c tcc -P %s.c > compile.msg"
-
 #define TESTRES_CREATDIR	"mkdir test-res\\%s\\%s > nul:"
 #define TESTRES_CPOUTPUT	"copy/y test\\*.out test-res\\%s\\%s > nul:"
 #define TESTRES_COMPMSG		"copy/y test\\compile.msg test-res\\%s\\%s > nul:"
@@ -32,6 +26,11 @@
 #define EVDIR "ev/"
 
 #endif
+
+/*
+  Utilities
+  ---------
+*/
 
 char copybuff[10000];
 
@@ -96,6 +95,24 @@ bool iffileexist(char *fname)
     return 1;
   } else
     return 0;
+}
+
+/*
+  Compiler configurations
+  -----------------------
+*/
+
+static int compiler_count = 0;
+compiler_config compiler_configs[MAX_COMPILERS];
+
+void add_compiler(compiler_config config)
+{
+  compiler_configs[compiler_count].name = strdup(config.name);
+  compiler_configs[compiler_count].c_compilation_command = 
+    strdup(config.c_compilation_command);
+  compiler_configs[compiler_count].cpp_compilation_command = 
+    strdup(config.cpp_compilation_command);
+  compiler_count++;
 }
 
 evaluator::evaluator(DB *mydb)
@@ -210,9 +227,9 @@ void evaluator::copytestcase(int c)
   system(cmd);
 }
 
-void evaluator::savemessage(char* user_id)
+char* evaluator::read_compiler_message(char* user_id, int compiler_index)
 {
-  DB *myData;	
+  DB* myData;
   char fname[100];
   char msg[1001];
   int msgsize;
@@ -222,21 +239,47 @@ void evaluator::savemessage(char* user_id)
     myData = db;
   else
     myData = connect_db();
-  sprintf(fname,"test-res/%s/%s/compile.msg",user_id,prob_id);
+  sprintf(fname,"test-res/%s/%s/%d/compile.msg",
+	  user_id,prob_id,compiler_index);
   if((fp = fopen(fname,"r"))!=NULL) {
-    msgsize = fread(msg,1,1000,fp);
+    msgsize = fread(msg,1,999,fp);
     msg[msgsize]='\0';
     fclose(fp);
   } else {
     msgsize = 0;
     msg[0]='\0';
   }
+  return strdup(msg);
+}
+
+void evaluator::savemessage(char* user_id)
+{
+  DB *myData;	
+  char temp_msg[1100];
+  char msg[1100*MAX_COMPILERS];
+
+  if(db!=0)
+    myData = db;
+  else
+    myData = connect_db();
+
+  msg[0] = '\0';
+  for(int c=0; c<compiler_count; c++) {
+    char* one_msg = read_compiler_message(user_id,c);
+    if(one_msg!=0) {
+      sprintf(temp_msg,"----------- compiler: %s -------------\n%s",
+	      compiler_configs[c].name,one_msg);
+      strcat(msg,temp_msg);
+    }
+    free(one_msg);
+  }
+
   savecompilermsg(myData,user_id,prob_id,msg);
   if(db==0)
     close_db(myData);
 }
 
-void evaluator::copyoutput(char *user_id)
+void evaluator::copyoutput(char *user_id, int compiler_index)
 {
   char dir[100];
   char finname[100];
@@ -246,14 +289,18 @@ void evaluator::copyoutput(char *user_id)
   mkdir(dir);
   sprintf(dir,"test-res/%s/%s",user_id,prob_id);
   mkdir(dir);
+  sprintf(dir,"test-res/%s/%s/%d",user_id,prob_id,compiler_index);
+  mkdir(dir);
   for(int i=0; i<casecount; i++) {
     sprintf(finname,"test/%d.out",i+1);
-    sprintf(foutname,"test-res/%s/%s/%d.out",user_id,prob_id,i+1);
+    sprintf(foutname,"test-res/%s/%s/%d/%d.out",
+	    user_id,prob_id,compiler_index,i+1);
     copysmallfile(finname,foutname);
   }
   
   //copy compile message
-  sprintf(foutname,"test-res/%s/%s/compile.msg",user_id,prob_id);
+  sprintf(foutname,"test-res/%s/%s/%d/compile.msg",
+	  user_id,prob_id,compiler_index);
   copyfile("test/compile.msg",foutname);
   
   //copy source code
@@ -342,14 +389,17 @@ void appendcompilemsg(char *st)
   }
 }
 
-bool evaluator::fetchandcompile(char *user_id, int sub_num)
+bool evaluator::fetchandcompile(char *user_id, int sub_num, 
+				compiler_config comp_config)
 {
   char sourcename[100];
+  char rel_sourcename[100];
   char cmd[100];
   char exname[100];
   int lang;
   
   sprintf(sourcename,"test/%s.c",prob_id);
+  sprintf(rel_sourcename,"%s.c",prob_id);
   sprintf(exname,"%s.exe",prob_id);
   
   fetchsource(user_id,sub_num,sourcename);
@@ -363,10 +413,14 @@ bool evaluator::fetchandcompile(char *user_id, int sub_num)
   } else {
     chdir("test");
     if(lang==EV_LANG_C)
-      sprintf(cmd,COMPILECMD_C,prob_id);
-    else
-      sprintf(cmd,COMPILECMD_CPP,prob_id);
-    // printf("compiler (%d): %s\n",lang,cmd);
+      sprintf(cmd,comp_config.c_compilation_command,
+	      prob_id,prob_id,prob_id);
+    else {
+      printf(">> %s\n",comp_config.cpp_compilation_command);
+      sprintf(cmd,comp_config.cpp_compilation_command,
+	      prob_id,prob_id,prob_id);
+    }
+    //printf("command line: %s\n",cmd);
     system(cmd);
     chdir("..");
     sprintf(exname,"test\\%s.exe",prob_id);
@@ -383,39 +437,58 @@ bool evaluator::fetchandcompile(char *user_id, int sub_num)
 int evaluator::evaluate(char* user_id, int sub_num, char *mlog)
 {
   int score = 0;
+  int best_score = 0;
   char msg[100];
   char thismsg[100];
   
-  msg[0]='\0';
+  // clear log
+  if(mlog != 0)
+    mlog[0] = '\0';
+
+  for(int c=0; c<compiler_count; c++) {
+    if(fetchandcompile(user_id,sub_num,compiler_configs[c])) {
+
+      score = 0;
+      msg[0]='\0';
+      printf("%s:",compiler_configs[c].name);
+
+      for(int i=0; i<casecount; i++) {
+      
+	// to make life not so boring...
+	printf("[%d]",i+1);
+	fflush(stdout);
+	
+	copytestcase(i+1);
+      
+	chdir("test");
+	score += test(i+1,thismsg);
+	chdir("..");
+	strcat(msg,thismsg);
+      }
+      printf("\n");
+    } else
+      strcpy(msg,"compile error");
   
-  if(fetchandcompile(user_id,sub_num)) {
-    for(int i=0; i<casecount; i++) {
-      
-      // to make life not so boring...
-      printf("[%d]",i+1);
-      fflush(stdout);
-      
-      copytestcase(i+1);
-      
-      chdir("test");
-      score += test(i+1,thismsg);
-      chdir("..");
-      strcat(msg,thismsg);
+    if(score>best_score)
+      best_score = score;
+
+    copyoutput(user_id,c);
+    cleartestdir();
+    
+    if(mlog!=0) {
+      if(c==0)
+	strcpy(mlog,msg);
+      else {
+	strcat(mlog," | ");
+	strcat(mlog,msg);
+      }
     }
-    printf("\n");
-  } else
-    strcpy(msg,"compile error");
-  
-  copyoutput(user_id);
+  }
   if(KEEP_COMPILE_MSG) {
     savemessage(user_id);
   }
-  cleartestdir();
-  
-  if(mlog!=0)
-    strcpy(mlog,msg);
-  
-  return score;
+
+  return best_score;
 }
 
 /*

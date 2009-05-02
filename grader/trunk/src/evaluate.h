@@ -12,6 +12,8 @@
 #define EV_LANG_CPP       2
 #define EV_LANG_ERROR    -1
 
+struct compiler_config;
+
 class evaluator {
 private:
   DB *db;
@@ -29,12 +31,13 @@ private:
   int test(int c, char* msg);
   void copytestcase(int c);
   // int copyandcompile(char* id, char* sect, int subnum);
-  void copyoutput(char* user_id);
+  void copyoutput(char* user_id, int compiler_index);
   void cleartestdir();
+  char* read_compiler_message(char* user_id, int compiler_index);
   void savemessage(char* user_id);
 
   void fetchsource(char* user_id, int sub_num, char *fname);
-  bool fetchandcompile(char *user_id, int sub_num);
+  bool fetchandcompile(char *user_id, int sub_num, compiler_config config);
   
   int getlanguage(char *fname);
   
@@ -51,6 +54,16 @@ public:
   
   int evaluate(char* id, int sub_num, char* mlog=0);
 };
+
+#define MAX_COMPILERS  5
+
+struct compiler_config {
+  char* name;
+  char* c_compilation_command;
+  char* cpp_compilation_command;
+};
+
+void add_compiler(compiler_config config);
 
 #endif
 

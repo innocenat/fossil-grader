@@ -1,6 +1,7 @@
-#include <stdio.h>
 #include "db_interface.h"
 #include "evaluate.h"
+#include <cstdio>
+#include <cstring>
 
 #define CONFIG_FILE  "grader.conf"
 
@@ -11,10 +12,31 @@ char username[10];
 char password[20];
 char dbname[20];
 
+char* copy_free_str_arg(char* line)
+{
+  char* p = line;
+  while(((*p)!='\0') && ((*p)!=':'))
+    p++;
+  if(*p=='\0')
+    return strdup("");
+
+  p++;
+  
+  char* t = p;
+  while((*t)!='\0')
+    t++;
+  t--;
+  while((t>=p) && (((*t)=='\n') || ((*t)=='\r')))
+    t--;
+  t++;
+  *t = '\0';					
+  return strdup(p);
+}
+
 void readconfig()
 {
   FILE *fp;
-  char line[100];
+  char line[500];
   char cmd[20];
   char val[20];
   
@@ -22,19 +44,43 @@ void readconfig()
   password[0]='\0';
   dbname[0]='\0';
   
+  compiler_config config;
+  int config_count = 0;
+
   if((fp=fopen(CONFIG_FILE,"r"))!=NULL) {
-    while(fgets(line,99,fp)!=NULL) {
-      if(sscanf(line,"%s %s",cmd,val)==1)
-	val[0]='\0';
+    while(fgets(line,499,fp)!=NULL) {
+      if(line[0]=='#') // comments
+        continue;
+
+      if(sscanf(line,"%s %s",cmd,val)<=1)
+	continue;
+
       if(strcmp(cmd,"username:")==0)
 	strcpy(username,val);
       else if(strcmp(cmd,"password:")==0)
 	strcpy(password,val);
       else if(strcmp(cmd,"database:")==0)
 	strcpy(dbname,val);
+
+      // compiler config
+      if(strcmp(cmd,"compiler:")==0) {
+	if(atoi(val)!=config_count) {
+	  if(config_count!=0)
+	    add_compiler(config);
+	  config_count++;
+	}
+      } else if(strcmp(cmd,"compiler-name:")==0)
+	config.name = strdup(val);
+      else if(strcmp(cmd,"compiler-c-cmd:")==0)
+	config.c_compilation_command = copy_free_str_arg(line);
+      else if(strcmp(cmd,"compiler-cpp-cmd:")==0)
+	config.cpp_compilation_command = copy_free_str_arg(line);
     }
   }
   set_db_config(dbname,username,password);
+
+  if(config_count!=0)
+    add_compiler(config);
 }
 
 void grade(DB *db, char *user_id, char *prob_id, int sub_num)

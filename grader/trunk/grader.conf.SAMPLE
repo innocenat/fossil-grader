@@ -2,3 +2,14 @@ database: databasename
 username: yourusername
 password: yourpassword
 
+compiler: 1
+compiler-name: tc
+# first three %s would be the prob id
+compiler-c-cmd: cmd.exe /c c:\tc\tcc -Dsystem=_SUS1_ -Dint86=_SUS2_ -Dintr=_SUS3_ -Ic:\tc -Lc:\tc -ml %s.c > compile.msg
+compiler-cpp-cmd: cmd.exe /c c:\tc\tcc -Dsystem=_SUS1_ -Dint86=_SUS2_ -Dintr=_SUS3_ -P -Ic:\tc -Lc:\tc\ -ml %s.c > compile.msg
+
+#compiler: 2
+#compiler-name: dev-c
+#compiler-c-cmd: cmd.exe /c c:\Dev-Cpp\bin\gcc -x c -Dsystem=_SUS1_ -Dint86=_SUS2_ -Dintr=_SUS3_ -o %s.exe %s.c > compile.msg
+#compiler-cpp-cmd: cmd.exe /c c:\Dev-Cpp\bin\g++ -x c++ -Dsystem=_SUS1_ -Dint86=_SUS2_ -Dintr=_SUS3_ -o %s.exe %s.c > compile.msg
+
