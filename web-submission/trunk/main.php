@@ -139,6 +139,7 @@ function listadmintools()
   echo '<a href="admin/upload_std_info.php">[upload student info]</a> ';
   echo '<a href="admin/list_password.php">[list user passwords]</a> ';
   echo '<a href="admin/random_user_password.php">[random user passwords]</a> ';
+  echo '<a href="admin/list_printer.php">[list printers]</a> ';
   echo "<hr>\n";
 }
 

@@ -35,8 +35,21 @@ function printfile($id,$fname)
   fclose($fp);
   fclose($fout);
 
-  $cmd = "print /d:" . PRINTERNAME . " $tmpfname";
-  exec($cmd);
+//  $cmd = "print /d:" . PRINTERNAME . " $tmpfname";
+//  exec($cmd);
+$filename = $tmpfname;
+$handle = fopen($filename, "r");
+$contents = fread($handle, filesize($filename));
+fclose($handle);
+$handle = printer_open(PRINTERNAME);
+
+
+printer_set_option($handle, PRINTER_PAPER_FORMAT, PRINTER_FORMAT_A4);
+
+printer_write($handle, $contents);
+
+printer_close($handle);
+
 
   unlink($tmpfname);
 

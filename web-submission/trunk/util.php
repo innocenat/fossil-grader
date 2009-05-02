@@ -1,5 +1,4 @@
 <?php
-
 function checkauthen()
 {
   session_start();
