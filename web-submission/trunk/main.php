@@ -40,13 +40,16 @@ function displaysubinfo($id, $prob_id, $sub_num)
        "AND grd_status.res_id=res_desc.res_id";
   $res = mysql_query($q);
   $result_text = mysql_result($res,0,'res_text');
-  echo $sub_num . ' submission(s), last on ' . $subtime . ' of size '. 
-       $sublen .' bytes (' . $result_text . ': <tt>'. 
-       mysql_result($res,0,'grading_msg') .'</tt>) ';
-
+  echo '<dd>';
+  echo $sub_num . ' submission(s), last on ' . $subtime . ' of size '. $sublen .' bytes'; 
+  echo '</dd>';
+  echo '<dd> ผลการตรวจ: <b>' . $result_text . '</b> <tt>'. 
+       mysql_result($res,0,'grading_msg') .'</tt>';
+  echo '</dd>';
+  echo '<dd>';
   // compiler message
   if(defined('SHOW_COMPILER_MSG')) {
-    echo "<FONT SIZE=-2>";
+    echo "<FONT SIZE=-1>";
     echo "<a href=\"viewmsg.php?id=$id&pid=$prob_id\" ".
          "target=\"_blank\">[compiler message]</a>";
     echo "</FONT> ";
@@ -54,7 +57,7 @@ function displaysubinfo($id, $prob_id, $sub_num)
 
   // links to source file
   if(defined('SOURCE_DOWNLOAD')) {
-    echo "<FONT SIZE=-2>";
+    echo "<FONT SIZE=-1>";
     //echo "<a href=\"viewcode.php?id=$id&pid=$prob_id&num=$sub_num\" target=\"_blank\">[source]</a>";
     echo "<a href=\"viewcode.php?id=$id&pid=$prob_id&num=$sub_num\">[source]</a>";
     echo "</FONT> ";
@@ -62,10 +65,11 @@ function displaysubinfo($id, $prob_id, $sub_num)
 
   // analysis mode
   if(defined('ANALYSIS_MODE')) {
-    echo "<FONT SIZE=-2>";
+    echo "<FONT SIZE=-1>";
     echo "<a href=\"viewoutput.php?id=$id&pid=$prob_id&num=$sub_num\">[outputs]</a>";
     echo "</FONT>";
   }
+  echo '</dd>';
 }
 
 function displayprobinfo($id, $prob_id)
@@ -79,7 +83,7 @@ function displayprobinfo($id, $prob_id)
     $maxsub_num = mysql_result($res,0,'sub_num');
     displaysubinfo($id, $prob_id, $maxsub_num);
   } else
-    echo 'not submitted';
+    echo 'ยังไม่ได้ส่ง';
   mysql_query("UNLOCK TABLES");
 }
 
@@ -89,11 +93,11 @@ function listprob($id)
 
   echo "<ul>\n";
   for($i=0; $i<$probcount; $i++) {
-    echo '<li>' . $problist[$i]['name'] . 
-         " [" . $problist[$i]['prob_id'] . "]<br>\n";
-    echo '<dd>';
+    echo '<b><li>' . $problist[$i]['name'] . 
+         " [" . $problist[$i]['prob_id'] . "]</b><br/>\n";
+
     displayprobinfo($id, $problist[$i]['prob_id']);
-    echo "</dd></li>\n";
+    echo "</li>\n";
   }
   echo "</ul>\n";
 }
@@ -152,7 +156,7 @@ function displaysubmitbox($id, $proboption)
   $proboption
   </select>
   Source: <input type="file" name="code" size="20"/>
-  <input type="submit" name="submit" value="submit"/>
+  <input type="submit" name="submit" value="ส่งไปตรวจ"/>
   </form>
 <hr>
 SUBMIT;
