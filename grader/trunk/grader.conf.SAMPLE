@@ -1,6 +1,14 @@
+#
+# please supply your MySQL db information
+#
 database: databasename
 username: yourusername
 password: yourpassword
+
+#
+# if you want to change the ev data dir, do it here
+#
+#ev_dir: ev\
 
 compiler: 1
 compiler-name: tc
@@ -8,6 +16,9 @@ compiler-name: tc
 compiler-c-cmd: cmd.exe /c c:\tc\tcc -Dsystem=_SUS1_ -Dint86=_SUS2_ -Dintr=_SUS3_ -Ic:\tc -Lc:\tc -ml %s.c > compile.msg
 compiler-cpp-cmd: cmd.exe /c c:\tc\tcc -Dsystem=_SUS1_ -Dint86=_SUS2_ -Dintr=_SUS3_ -P -Ic:\tc -Lc:\tc\ -ml %s.c > compile.msg
 
+#
+# you can add more compilers here
+#
 #compiler: 2
 #compiler-name: dev-c
 #compiler-c-cmd: cmd.exe /c c:\Dev-Cpp\bin\gcc -x c -Dsystem=_SUS1_ -Dint86=_SUS2_ -Dintr=_SUS3_ -o %s.exe %s.c > compile.msg

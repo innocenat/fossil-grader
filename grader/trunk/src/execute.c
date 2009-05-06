@@ -4,9 +4,12 @@ an unknown source.  (FIX THIS)
 
 */
 #include <windows.h>
+#include <psapi.h>
 #include <tlhelp32.h>
 #include <stdio.h>
 #include "execute.h"
+
+#define INITIAL_WAIT_FOR_MEM_CHECK  100
 
 /* 
 ==How execute works==
@@ -129,7 +132,7 @@ void kill_error_report()
 	TerminateProcess(hProcess, 0);
 	Sleep(500);
 	while(get_process_id("dwwin.exe")==pid) {
-	  fprintf(stderr,"wait...\n");
+	  fprintf(stderr,"wait for dwwin.exe to die...\n");
 	  Sleep(500);
 	}
       } else
@@ -187,12 +190,82 @@ void setstartupinfo(STARTUPINFO *si, char *inname, char *outname)
   si->hStdError = NULL;
 }
 
+// taken from http://msdn.microsoft.com/en-us/library/ms682050(VS.85).aspx
+void PrintMemoryInfo(DWORD processID)
+{
+  HANDLE hProcess;
+  PROCESS_MEMORY_COUNTERS pmc;
 
-int execute(char *exname, char *inname, char *outname, double t)
+  // Print the process identifier.
+  
+  printf("\nProcess ID: %u\n", processID);
+  
+  // Print information about the memory usage of the process.
+  
+  hProcess = OpenProcess(PROCESS_QUERY_INFORMATION |
+			 PROCESS_VM_READ,
+			 FALSE,processID);
+  if(hProcess == NULL)
+    return;
+  
+  if(GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc))) {
+    printf("\tPageFaultCount: %d\n",pmc.PageFaultCount);
+    printf("\tPeakWorkingSetSize: %d\n", 
+	   pmc.PeakWorkingSetSize);
+    printf("\tWorkingSetSize: %d\n",pmc.WorkingSetSize);
+    printf("\tQuotaPeakPagedPoolUsage: %d\n", 
+	   pmc.QuotaPeakPagedPoolUsage);
+    printf("\tQuotaPagedPoolUsage: %d\n", 
+	   pmc.QuotaPagedPoolUsage);
+    printf("\tQuotaPeakNonPagedPoolUsage: %d\n", 
+	   pmc.QuotaPeakNonPagedPoolUsage);
+    printf("\tQuotaNonPagedPoolUsage: %d\n", 
+	   pmc.QuotaNonPagedPoolUsage);
+    printf("\tPagefileUsage: %d\n",pmc.PagefileUsage); 
+    printf("\tPeakPagefileUsage: %d\n", 
+	   pmc.PeakPagefileUsage);
+  }
+  CloseHandle( hProcess );
+}
+
+int check_memory_usage(DWORD pid, int max_mem) {
+  // modified from http://msdn.microsoft.com/en-us/library/ms682050(VS.85).aspx
+  //PrintMemoryInfo(pid);
+  HANDLE hProcess;
+  PROCESS_MEMORY_COUNTERS pmc;
+
+  if((max_mem==0) || (pid==0))
+    return 1;
+
+  if(pid == get_ntvdm_pid()) {
+    printf("ntvdm: ignored\n");
+    return 1;
+  }
+
+  hProcess = OpenProcess(PROCESS_QUERY_INFORMATION |
+			 PROCESS_VM_READ,
+			 FALSE, pid);
+  if(hProcess == NULL)
+    return 1;
+  
+  if(GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc))) {
+    int max_mem_usage = pmc.PeakWorkingSetSize;
+    if(pmc.PeakPagefileUsage > max_mem_usage)
+      max_mem_usage = pmc.PeakPagefileUsage;
+    if(max_mem_usage > max_mem) {
+      CloseHandle(hProcess);
+      return 0;
+    }
+  }
+  CloseHandle(hProcess);
+  return 1;
+}
+
+int execute(char *exname, char *inname, char *outname, double t, int max_mem)
 {
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
-  int ifsuccess = 1;
+  int ifsuccess = EXE_RESULT_OK;
   
   ZeroMemory(&si, sizeof(si));
   si.cb = sizeof(si);
@@ -215,9 +288,23 @@ int execute(char *exname, char *inname, char *outname, double t)
     }
   //fprintf(stderr,"Process ID: %ld\n",pi.dwProcessId);
   //fprintf(stderr,"time limit = %d\n",t);
-  if(WaitForSingleObject( pi.hProcess, (int)(t*1000)+1)==WAIT_TIMEOUT) {
+  
+  // checking memory usage
+  // wait 0.1 sec before checking mem usage
+  Sleep(INITIAL_WAIT_FOR_MEM_CHECK);
+  if(!check_memory_usage(pi.dwProcessId,max_mem)) {
+    // using too much memory
+    printf("memory exceeded (beginning)\n");
+    PrintMemoryInfo(pi.dwProcessId);
+    ifsuccess = EXE_RESULT_MEMORY;
+  }
+
+  if((ifsuccess == EXE_RESULT_MEMORY) ||
+     (WaitForSingleObject(pi.hProcess, 
+			  (int)(t*1000) + 1 
+			  - INITIAL_WAIT_FOR_MEM_CHECK)==WAIT_TIMEOUT)) {
     // need to kill...
-    HANDLE hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, pi.dwProcessId);
+    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pi.dwProcessId);
     
     if(hProcess != NULL) {
       fprintf(stderr,"killing pid: %ld\n",pi.dwProcessId);
@@ -227,12 +314,12 @@ int execute(char *exname, char *inname, char *outname, double t)
       DWORD dwNtvdmId = get_ntvdm_pid();
       fprintf(stderr,"killing (ntvdm) pid: %ld\n",dwNtvdmId);
       if(dwNtvdmId!=0) {
-	hProcess = OpenProcess( PROCESS_ALL_ACCESS, FALSE, dwNtvdmId);
+	hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwNtvdmId);
 	TerminateProcess(hProcess, 0);
       } else {
         fprintf(stderr,"killing process error\n");
       }
-
+      
       if(get_ntvdm_pid()!=0) {
 	fprintf(stderr,"killing error, ntvdm.exe still remains;");
 	fprintf(stderr,"please MANUALLY kill it.");
@@ -244,7 +331,13 @@ int execute(char *exname, char *inname, char *outname, double t)
 	wait_dialog();
       }
     }
-    ifsuccess = 0;
+    if(ifsuccess != EXE_RESULT_MEMORY)
+      ifsuccess = EXE_RESULT_TIMEOUT;
+  }
+  if((ifsuccess==EXE_RESULT_OK) && 
+     (!check_memory_usage(pi.dwProcessId,max_mem))) {
+    // using too much memory
+    ifsuccess = EXE_RESULT_MEMORY;
   }
   wait_dialog();
   if(si.hStdInput!=NULL)

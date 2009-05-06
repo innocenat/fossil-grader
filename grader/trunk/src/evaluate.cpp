@@ -12,8 +12,8 @@
 #define chdir						_chdir
 
 // all the system command for windoze
-#define EVDIR						"ev\\"
-#define COPYINCMD				"copy %s%s\\%d.in test > nul:"
+#define DEFAULT_EVDIR	"ev\\"
+#define COPYINCMD	"copy %s%s\\%d.in test > nul:"
 #define COPYSOLCMD      "copy %s%s\\%d.sol test > nul:"
 #define MOVEOLDTESTCMD  "copy/y test\\*.* old-test > nul:"
 #define DELTESTDIR      "del/q test\\*.*"
@@ -23,7 +23,7 @@
 
 #else
 
-#define EVDIR "ev/"
+#define DEFAULT_EVDIR "ev/"
 
 #endif
 
@@ -86,7 +86,7 @@ void copysmallfile(char* sfname, char* dfname)
   fclose(fout);
 }
 
-bool iffileexist(char *fname)
+bool iffileexist(char* fname)
 {
   FILE *fp = fopen(fname,"r");
   
@@ -95,6 +95,11 @@ bool iffileexist(char *fname)
     return 1;
   } else
     return 0;
+}
+
+bool iffullpath(char* path)
+{
+  return (path[0]=='\\') || (path[1]==':');
 }
 
 /*
@@ -115,10 +120,10 @@ void add_compiler(compiler_config config)
   compiler_count++;
 }
 
-evaluator::evaluator(DB *mydb)
+evaluator::evaluator(DB *mydb, char* evdir)
 {
   prob_id = 0;
-  evname = 0;
+  ev_name = 0;
   infname = 0;
   outfname = 0;
   
@@ -126,18 +131,25 @@ evaluator::evaluator(DB *mydb)
   fullscore = 0;
   db = mydb;
   language = EV_LANG_NONE;
+
+  if(evdir!=0)
+    ev_dir = strdup(evdir);
+  else
+    ev_dir = strdup(DEFAULT_EVDIR);
 }
 
 evaluator::~evaluator()
 {
   if(prob_id!=0)
     free(prob_id);
-  if(evname!=0)
-    free(evname);
+  if(ev_name!=0)
+    free(ev_name);
   if(infname!=0)
     free(infname);
   if(outfname!=0)
     free(outfname);
+  if(ev_dir!=0)
+    free(ev_dir);
 }
 
 void evaluator::readconf(char* pname)
@@ -148,11 +160,12 @@ void evaluator::readconf(char* pname)
   if(prob_id!=0)
     free(prob_id);
   prob_id = strdup(pname);
-  sprintf(confname,"%s%s/conf",EVDIR,pname);
+  sprintf(confname,"%s%s/conf",ev_dir,pname);
   FILE *fp = fopen(confname,"r");
   if(fp!=NULL) {
     casecount = fullscore = 0;
     timelimit = 1.0;
+    memorylimit = 0;
     while(fgets(line,100,fp)!=NULL) {
       char topic[30];
       char value[20];
@@ -162,9 +175,9 @@ void evaluator::readconf(char* pname)
       else if(strcmp(topic,"score:")==0)
 	sscanf(value,"%d",&fullscore);
       else if(strcmp(topic,"evaluator:")==0) {
-	if(evname!=NULL)
-	  free(evname);
-	evname = strdup(value);
+	if(ev_name!=NULL)
+	  free(ev_name);
+	ev_name = strdup(value);
       } else if(strcmp(topic,"input:")==0) {
 	if(infname!=NULL)
 	  free(infname);
@@ -175,6 +188,8 @@ void evaluator::readconf(char* pname)
 	outfname = strdup(value);
       } else if(strcmp(topic,"timelimit:")==0)
 	sscanf(value,"%lf",&timelimit);
+      else if(strcmp(topic,"memorylimit:")==0)
+	sscanf(value,"%d",&memorylimit);
     }
     if(fullscore==0)
       fullscore=casecount;
@@ -200,19 +215,25 @@ int evaluator::test(int c, char* msg)
     copyfile(inname,infname);
   
   if(outfname==0)
-    exres = execute(prob_id, inname, outname, timelimit);
+    exres = execute(prob_id, inname, outname, timelimit, memorylimit);
   else {
-    exres = execute(prob_id, inname, 0, timelimit);
+    exres = execute(prob_id, inname, 0, timelimit, memorylimit);
     copyfile(outfname,outname);
   }
   
-  if(exres!=0) {
+  if(exres==EXE_RESULT_OK) {
     //  fprintf(stderr,"verifying...\n");
-    sprintf(evfullname,"../%s%s/%s",EVDIR,prob_id,evname);
+    if(iffullpath(ev_dir))
+      sprintf(evfullname,"%s%s/%s",ev_dir,prob_id,ev_name);
+    else
+      sprintf(evfullname,"../%s%s/%s",ev_dir,prob_id,ev_name);
     // printf("%s\n",evfullname);
     return verify(evfullname,c,msg);
-  } else {
+  } else if(exres==EXE_RESULT_TIMEOUT) {
     strcpy(msg,"T");
+    return 0;
+  } else if(exres==EXE_RESULT_MEMORY) {
+    strcpy(msg,"x");
     return 0;
   }
 }
@@ -221,9 +242,9 @@ void evaluator::copytestcase(int c)
 {
   char cmd[100];
   
-  sprintf(cmd,COPYINCMD,EVDIR,prob_id,c);
+  sprintf(cmd,COPYINCMD,ev_dir,prob_id,c);
   system(cmd);
-  sprintf(cmd,COPYSOLCMD,EVDIR,prob_id,c);
+  sprintf(cmd,COPYSOLCMD,ev_dir,prob_id,c);
   system(cmd);
 }
 
@@ -267,7 +288,7 @@ void evaluator::savemessage(char* user_id)
   for(int c=0; c<compiler_count; c++) {
     char* one_msg = read_compiler_message(user_id,c);
     if(one_msg!=0) {
-      sprintf(temp_msg,"----------- compiler: %s -------------\n%s",
+      sprintf(temp_msg,"=================== compiler: %s ==================\n%s",
 	      compiler_configs[c].name,one_msg);
       strcat(msg,temp_msg);
     }
@@ -355,7 +376,8 @@ int evaluator::getlanguage(char *fname)
   while((lcount<10) && (fgets(line,99,fp)!=NULL)) {
     lcount++;
     strupper(line);
-    if(strstr(line,"LANG:")!=NULL) {
+    // TODO: this is complete hack.  should fix it.
+    if((strstr(line,"LANG:")!=NULL) || (strstr(line,"LANG :")!=NULL)) {
       if(strstr(line,"C++")!=NULL) {
 	fclose(fp);
 	return EV_LANG_CPP;
@@ -416,7 +438,7 @@ bool evaluator::fetchandcompile(char *user_id, int sub_num,
       sprintf(cmd,comp_config.c_compilation_command,
 	      prob_id,prob_id,prob_id);
     else {
-      printf(">> %s\n",comp_config.cpp_compilation_command);
+      //printf(">> %s\n",comp_config.cpp_compilation_command);
       sprintf(cmd,comp_config.cpp_compilation_command,
 	      prob_id,prob_id,prob_id);
     }
@@ -425,10 +447,10 @@ bool evaluator::fetchandcompile(char *user_id, int sub_num,
     chdir("..");
     sprintf(exname,"test\\%s.exe",prob_id);
     if(iffileexist(exname)) {
-      appendcompilemsg("\n===========================\nCompiled successfully.\n");
+      appendcompilemsg("\n---------------------------\nCompiled successfully.\n");
       return true;
     } else {
-      appendcompilemsg("\n===========================\nError compiling source program.\n");
+      appendcompilemsg("\n---------------------------\nError compiling source program.\n");
       return false;
     }
   }
@@ -439,6 +461,7 @@ int evaluator::evaluate(char* user_id, int sub_num, char *mlog)
   int score = 0;
   int best_score = 0;
   char msg[100];
+  char msg_with_name[200];
   char thismsg[100];
   
   // clear log
@@ -475,12 +498,17 @@ int evaluator::evaluate(char* user_id, int sub_num, char *mlog)
     copyoutput(user_id,c);
     cleartestdir();
     
+    if(compiler_count!=1)
+      sprintf(msg_with_name,"%s[%s]",compiler_configs[c].name,msg);
+    else
+      sprintf(msg_with_name,"%s",msg);
+
     if(mlog!=0) {
       if(c==0)
-	strcpy(mlog,msg);
+	strcpy(mlog,msg_with_name);
       else {
 	strcat(mlog," | ");
-	strcat(mlog,msg);
+	strcat(mlog,msg_with_name);
       }
     }
   }

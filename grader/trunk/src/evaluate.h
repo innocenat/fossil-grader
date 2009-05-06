@@ -18,10 +18,12 @@ class evaluator {
 private:
   DB *db;
   char* prob_id;
-  char* evname;
+  char* ev_name;
+  char* ev_dir;
   int casecount;
   int fullscore;
   double timelimit;
+  int memorylimit;
 
   char* infname;
   char* outfname;
@@ -42,7 +44,7 @@ private:
   int getlanguage(char *fname);
   
 public:
-  evaluator(DB *mydb = 0);
+  evaluator(DB *mydb = 0, char* evdir=0);
   ~evaluator();
   
   void readconf(char* probname);

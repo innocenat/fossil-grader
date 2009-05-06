@@ -6,7 +6,7 @@
 // ---read output, check with solution
 // ---if they are identical, output 1
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   FILE *fo, *fsol;
 

@@ -11,6 +11,7 @@
 char username[10];
 char password[20];
 char dbname[20];
+char* ev_dir;
 
 char* copy_free_str_arg(char* line)
 {
@@ -43,6 +44,7 @@ void readconfig()
   username[0]='\0';
   password[0]='\0';
   dbname[0]='\0';
+  ev_dir = 0;
   
   compiler_config config;
   int config_count = 0;
@@ -61,6 +63,8 @@ void readconfig()
 	strcpy(password,val);
       else if(strcmp(cmd,"database:")==0)
 	strcpy(dbname,val);
+      else if(strcmp(cmd,"ev_dir:")==0)
+	ev_dir = strdup(val);
 
       // compiler config
       if(strcmp(cmd,"compiler:")==0) {
@@ -85,7 +89,7 @@ void readconfig()
 
 void grade(DB *db, char *user_id, char *prob_id, int sub_num)
 {
-  evaluator ev(db);
+  evaluator ev(db, ev_dir);
   int score;
   char msg[100];
   

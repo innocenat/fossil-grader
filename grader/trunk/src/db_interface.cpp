@@ -91,7 +91,7 @@ void setsubstatus(DB *db, char *user_id, char *prob_id, int status, int score,  
 
 void savecompilermsg(DB *db, char *user_id, char *prob_id, char *msg)
 {
-  const int MSG_BUF_SIZE = 1000;
+  const int MSG_BUF_SIZE = 5000;
 
   char msg_buffer[MSG_BUF_SIZE+1];
   char msg_enbuffer[MSG_BUF_SIZE*2+3];

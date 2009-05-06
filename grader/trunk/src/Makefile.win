@@ -1,13 +1,13 @@
 # Project: grader
 # Makefile created by Dev-C++ 4.9.9.2
 
-CPP  = c:\dev-cpp\bin\g++.exe -D__DEBUG__
-CC   = c:\dev-cpp\bin\gcc.exe -D__DEBUG__
+CPP  = g++.exe -D__DEBUG__
+CC   = gcc.exe -D__DEBUG__
 WINDRES = windres.exe
 RES  = 
 OBJ  = grader.o evaluate.o db_interface.o execute.o $(RES)
 LINKOBJ  = grader.o evaluate.o db_interface.o execute.o $(RES)
-LIBS =  -L"C:/Dev-Cpp/lib" -lmysql  -g3 
+LIBS =  -lpsapi -lmysql  -g3 
 INCS =  -I"C:/Dev-Cpp/include"  -I"C:/Program Files/MySQL/MySQL Server 5.0/include" 
 CXXINCS =  -I"C:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/Dev-Cpp/include/c++/3.4.2/backward"  -I"C:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.2"  -I"C:/Dev-Cpp/include"  -I"C:/Program Files/MySQL/MySQL Server 5.0/include" 
 BIN  = grader.exe
@@ -17,7 +17,7 @@ RM = rm -f
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before grader.exe all-after trun.exe
+all: all-before grader.exe all-after
 
 
 clean: clean-custom
@@ -37,6 +37,3 @@ db_interface.o: db_interface.cpp
 
 execute.o: execute.c
 	$(CPP) -c execute.c -o execute.o $(CXXFLAGS)
-
-trun.exe: execute.o trun.cpp
-	$(CPP) -o trun.exe trun.cpp execute.o
