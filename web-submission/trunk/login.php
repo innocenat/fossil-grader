@@ -26,7 +26,7 @@ if(isset($_GET['error'])) {
 
 
 <div style="float: left; text-align: right; padding-right: 5px; width: 45%">
-<img src="picture/logoposn.jpg"><br/><img src="picture/logoposn3.jpg">
+<img src="images/fossil-logo.png"/>
 </div>
 <div style="float: right; text-align: left; padding-left: 5px; width: 53%">
 <br>
@@ -35,26 +35,7 @@ if(isset($_GET['error'])) {
 <b>password : </b><input type="password" name="pass"/><br/>
 <input type="submit" name="okay" value="login"/>
 </div>
-
-<!---
-<br><br><br>
-<center>
-<table width=500>
-<tr>
-  <td align="center" width="168"><img src="picture/logoposn.jpg"><br><img src="picture/logoposn3.jpg"></td>	
-  <td><table width=100%><tr>
-  <td align="right" width="30%">username :</td><td align="left"><input type="text" name="id"></td></tr><tr>
-  <td align="right" width="30%">password :</td><td align="left"><input type="password" name="pass"></td></tr>
-  </table></td>
-</tr>
-
-<tr><td colspan="2" align="center">
-<input type="submit" name="okay" value="login">
-</td></tr>
-</table>
--->
 </form>
 
-<h1><a href="download">Download software</a></h1>
 </body>
 </html>
