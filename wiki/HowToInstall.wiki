@@ -1,18 +1,55 @@
 #summary Quick start guide
 #labels Featured,Phase-Deploy
 
-= Introduction =
+== Introduction ==
 
 There are two components in fossil-grader: a php web application and a grader, which is a console application.
 
-= Requirements =
+== Requirements ==
   * Web server software with php support, e.g., Apache
   * MySQL
 
-= How to install =
+== How to install ==
 
-== Set up database ==
+=== Download software ===
 
-== Web submission ==
+  * Download [http://fossil-grader.googlecode.com/files/web-submission-0.5.zip web submission app], extract, and put it in somewhere accessible through web server.
+  * Download [http://fossil-grader.googlecode.com/files/grader-0.5.zip grader], extract, and put it somewhere.  It shouldn't be accessible from the web.
 
-== Grader ==
+=== Set up database ===
+
+  * Create a database on MySQL.  Note the username, the password, and the database name.
+  * Import initial data to the database.  Run sql commands in `init_db.sql` from web-submission dir.
+
+Note that the system provides no support for adding individual users or adding problems, you would do that directly to the database.  We usually use [http://www.phpmyadmin.net/ phpmyadmin] or some other interface to MySQL to do this.
+
+=== Web submission ===
+
+  * Edit `config.php`.  Mainly edit these lines:
+    {{{
+    //for MySQL
+    define("MYSQL_USER","your_user_name_here");
+    define("MYSQL_PASSWD","your_password_herer");
+    define("MYSQL_DATABASE","your_database_name_here");
+    }}}
+
+    (see example in config.php.SAMPLE.)
+
+=== Grader ===
+
+  # Get the web submission working first.
+  # Edit `grader.conf` (see example from grader.conf.SAMPLE)
+    * Add database config
+    * Check command line for compilation, especially on paths
+  # Edit test data (by default they are in ev/, see example in ev/add)
+  # Make sure you set paths correctly.
+    * Make sure you have libmysql.dll on the path, or you can just copy it from mysql dir to grader's dir.
+    * If you want to use Turbo C, make sure tlink.exe is on the path.
+    * To change path settings, go to
+      Settings -> Control Panel -> System -> Advanced -> Environment Variables
+    Then add the required paths in PATH variable.  
+    For example, if you want to add Turbo C bin path, you can put "C:\TC\BIN;" in front of all other paths,
+    if your Turbo C executables, e.g., tcc.exe and tlink.exe are in C:\TC\BIN.     
+  # Start grader by calling grader.exe
+
+If you make any changes on the config, don't forget to restart the grader.  (Restart it using the usual way: Ctrl-C.)
