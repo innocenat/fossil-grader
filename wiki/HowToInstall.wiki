@@ -1,0 +1,18 @@
+#summary Quick start guide
+#labels Featured,Phase-Deploy
+
+= Introduction =
+
+There are two components in fossil-grader: a php web application and a grader, which is a console application.
+
+= Requirements =
+  * Web server software with php support, e.g., Apache
+  * MySQL
+
+= How to install =
+
+== Set up database ==
+
+== Web submission ==
+
+== Grader ==
