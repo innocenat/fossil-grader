@@ -36,4 +36,34 @@ Note that we use `:` as a field separator.
 
 == How to add problems ==
 
-(To be written)
+There are basically two steps: add problem info to the database, and set up evaluation information (i.e., test data).
+
+To add problem to the database, add a row into table `prob_info`, whose fields are described below.
+
+{{{
+TABLE: prob_info 
+COLUMNS:
+  prob_id      varchar(10)  
+  name         varchar(100)  -- the name of the problem
+  avail        char(1)       -- shown on the web? either 'Y' or 'N' 
+  prob_order   int(10)       -- problems are shown to user ordered by their prob_order
+}}}
+
+To configure problem evaluation information, create a directory named after the problem id (the `prob_id` field above) in `ev` directory.  Copy test data there.  The input files should be named `1.in`, `2.in`, etc; the solution files should be named `1.sol`, `2.sol`,.. etc.  Then create a configuration file named `conf` in that directory; this configuration file specifies the number of test cases, various limits, and evaluators.
+
+Follow the example below:
+
+{{{
+cases: 2
+evaluator: ../scomp.exe
+timelimit: 1
+memorylimit: 2097152
+}}}
+
+The `scomp.exe` is a simple string comparison evaluator.  It strips out all spaces and compare the output with the solution.   You can definitely write your own comparator.  See    scomp's [http://code.google.com/p/fossil-grader/source/browse/grader/trunk/src/comparators/scomp.cc source code] for example.
+
+=== Contest mode? ===
+
+Currently the grader does not support contest mode.  If you want to run a contest (where contestants' programs are evaluated with example test data and they'll later be graded with real test data), you can have two copies of evaluation (`ev`) directory, one containing problems with sample test data and another with real test data.
+
+You can specify evaluation directory in `grader.conf`, using option `ev_dir`.
