@@ -14,7 +14,7 @@ There are two components in fossil-grader: a php web application and a grader, w
 === Download software ===
 
   * Download [http://fossil-grader.googlecode.com/files/web-submission-0.5.zip web submission app], extract, and put it in somewhere accessible through web server.
-  * Download [http://fossil-grader.googlecode.com/files/grader-0.5.zip grader], extract, and put it somewhere.  It shouldn't be accessible from the web.
+  * Download [http://fossil-grader.googlecode.com/files/grader-0.51.zip grader], extract, and put it somewhere.  It shouldn't be accessible from the web.
 
 === Set up database ===
 
