@@ -1,7 +1,7 @@
 #summary How to add users and problems.
 #labels Featured,Phase-Deploy
 
-This wiki page describe how to config the grader.
+This wiki page describe how to config the grader.  See HowToInstall for installation instructions.
 
 == How to add users ==
 
