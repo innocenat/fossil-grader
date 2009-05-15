@@ -6,7 +6,7 @@
 // ---read output, check with solution
 // ---if they are identical, output 1
 
-int main(int argc, char *argv[])
+main(int argc, char *argv[])
 {
   FILE *fo, *fsol;
 
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
   fo = fopen(argv[2],"r");
   fsol = fopen(argv[3],"r");
   if((fo==NULL) || (fsol==NULL)) {
-    printf("FAILED\n");
+    printf("0\n-");
     return 0;
   }
   while((!feof(fo)) || (!feof(fsol))) {
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
       ;
     if((feof(fo) && (!feof(fsol))) ||
        (feof(fsol) && (!feof(fo)))) {
-      printf("FAILED\n");
+      printf("0\n-");
       fclose(fo);
       fclose(fsol);
 //  fprintf(stderr,"done\n");
@@ -37,14 +37,14 @@ int main(int argc, char *argv[])
     if(feof(fo) && feof(fsol))
       break;
     if(co!=csol) {
-      printf("FAILED\n");
+      printf("0\n-");
       fclose(fo);
       fclose(fsol);
 //  fprintf(stderr,"done\n");
       return 0;
     }      
   }
-  printf("PASSED\n");
+  printf("1\nP");
   fclose(fo);
   fclose(fsol);
 //  fprintf(stderr,"done\n");

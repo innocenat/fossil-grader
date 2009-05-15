@@ -540,7 +540,7 @@ int evaluator::evaluate(char* user_id, int sub_num, char *mlog)
     if(compiler_count!=1)
       sprintf(msg_with_name,"%s[%s]",compiler_configs[c].name,msg);
     else
-      sprintf(msg_with_name,"%s",msg);
+      sprintf(msg_with_name,"[%s]",msg);
 
     if(mlog!=0) {
       if(c==0)
