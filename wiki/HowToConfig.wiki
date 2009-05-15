@@ -62,8 +62,19 @@ memorylimit: 2097152
 
 The `scomp.exe` is a simple string comparison evaluator.  It strips out all spaces and compare the output with the solution.   You can definitely write your own comparator.  See    scomp's [http://code.google.com/p/fossil-grader/source/browse/grader/trunk/src/comparators/scomp.cc source code] for example.
 
+== More information about the grader ==
+
 === Contest mode? ===
 
 Currently the grader does not support contest mode.  If you want to run a contest (where contestants' programs are evaluated with example test data and they'll later be graded with real test data), you can have two copies of evaluation (`ev`) directory, one containing problems with sample test data and another with real test data.
 
 You can specify evaluation directory in `grader.conf`, using option `ev_dir`.
+
+When the contest is over, you may want to grade all submissions (not only just ones on the queue).  See the options below.
+
+=== Various options for calling grader ===
+
+By just calling `grader`, you run the grader in *queue mode*, i.e., it reads submitted program from the queue and grades each program.  When you run a contest, you usually runs the grader in this mode, but later you want to grade all submissions with the real test data.  You can call the grader with the following options:
+
+  * `grade-all` --- Use this option to grade all submissions.
+  * `grade-prob [prob_id1] [prob_id2] ...`  --- Use this option to grade submissions for specific problems.  You can list many problem id's.
