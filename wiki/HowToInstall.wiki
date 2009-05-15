@@ -20,6 +20,7 @@ There are two components in fossil-grader: a php web application and a grader, w
 
   * Create a database on MySQL.  Note the username, the password, and the database name.
   * Import initial data to the database.  Run sql commands in `init_db.sql` from web-submission dir.
+  * The imported initial data comes with root account.  The default password is `serverroot`.  You *must* change this.
 
 Note that the system provides no support for adding individual users or adding problems, you would do that directly to the database.  We usually use [http://www.phpmyadmin.net/ phpmyadmin] or some other interface to MySQL to do this.
 
@@ -53,3 +54,7 @@ Note that the system provides no support for adding individual users or adding p
   # Start grader by calling grader.exe
 
 If you make any changes on the config, don't forget to restart the grader.  (Restart it using the usual way: Ctrl-C.)
+
+=== What's next? ===
+
+To add users and set up problems, please see HowToConfig
