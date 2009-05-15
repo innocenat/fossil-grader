@@ -1,0 +1,39 @@
+#summary How to add users and problems.
+#labels Featured,Phase-Deploy
+
+This wiki page describe how to config the grader.
+
+== How to add users ==
+
+Each user has *user_id* and *password* (for logging in), *name* (can be full name).  A user can also belongs to a *group*.
+
+There are 3 types of users: administrator (*A*), group supervisor (*S*), and contestant (*C*).  An admin can generate passwords, view score reports, add a list of new users, and view their passwords (so that the passwords can be distributed to users in competition).  A group supervisor can view the scores of all contestants in the group.  To specify user's type, we use `A`, `S`, or `C`.
+
+=== How to add individual users ===
+
+To add an individual user, you have to do it directly on the database.  Just insert a row to table `user_info`.  The following shows the structure of `user_info` table:
+
+{{{
+TABLE: user_info 
+COLUMNS:
+  user_id  varchar(10)  -- username
+  name     varchar(100) -- full name
+  passwd   varchar(10)  -- password (not encrypted)
+  grp      varchar(10)  -- group id
+  type     char(1)      -- user type:
+                          'C' for contestant
+                          'S' for supervisor
+                          'A' for admin
+}}}
+
+=== How to add bulk of users ==
+
+If you log in as an admin, you can see a menu *upload student info*.  That's the link for adding users.  Prepare a text file that contains users' information, one line per each user, in the following format:
+
+  `username:name:password:type:group`
+
+Note that we use `:` as a field separator.
+
+== How to add problems ==
+
+(To be written)
