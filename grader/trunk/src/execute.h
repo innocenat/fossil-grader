@@ -10,7 +10,6 @@ extern "C" {
 #endif
 
 int execute(char *exname, char *inname, char *outname, double t, int max_mem=0);
-int verify(char *vname, int c, char *msg);
 
 #ifdef __cplusplus
 }

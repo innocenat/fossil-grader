@@ -348,35 +348,3 @@ int execute(char *exname, char *inname, char *outname, double t, int max_mem)
   return ifsuccess;
 }
 
-int verify(char *vname, int c, char *msg)
-{
-  char inname[20];
-  char outname[20];
-  char solname[20];
-  char scorename[20];
-  char cmd[200];
-  char line[100];
-  FILE *sfp;
-  int score;
-  
-  sprintf(inname,"%d.in",c);
-  sprintf(outname,"%d.out",c);
-  sprintf(solname,"%d.sol",c);
-  sprintf(scorename,"%d.score",c);
-  
-  sprintf(cmd,"%s %s %s %s",vname,inname,outname,solname);
-  execute(cmd,"-",scorename,100);
-  
-  sfp = fopen(scorename,"r");
-  score=0;
-  *msg = '\0';
-  if(sfp!=NULL) {
-    fgets(line,99,sfp);
-    sscanf(line,"%d",&score);
-    if(fgets(line,99,sfp)!=NULL)
-      strcpy(msg,line);
-    fclose(sfp);
-  }
-  return score;
-}
-

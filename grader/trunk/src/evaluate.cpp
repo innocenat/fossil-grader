@@ -193,9 +193,47 @@ void evaluator::readconf(char* pname)
     }
     if(fullscore==0)
       fullscore=casecount;
+    fclose(fp);
   } else {
+    printf("Warning: config file for problem %s not found.\n");
     casecount = fullscore = 0;
   }
+}
+
+int evaluator::verify(char *vname, int c, char *msg)
+{
+  char inname[20];
+  char outname[20];
+  char solname[20];
+  char scorename[20];
+  char cmd[200];
+  char line[100];
+  FILE *sfp;
+  int score;
+  
+  sprintf(inname,"%d.in",c);
+  sprintf(outname,"%d.out",c);
+  sprintf(solname,"%d.sol",c);
+  sprintf(scorename,"%d.score",c);
+  
+  sprintf(cmd,"%s %s %s %s",vname,inname,outname,solname);
+
+  if(!iffileexist(vname))
+    printf("comparator not found, looking for: %s\n",vname);
+  else
+    execute(cmd,"-",scorename,100);
+  
+  sfp = fopen(scorename,"r");
+  score=0;
+  *msg = '\0';
+  if(sfp!=NULL) {
+    fgets(line,99,sfp);
+    sscanf(line,"%d",&score);
+    if(fgets(line,99,sfp)!=NULL)
+      strcpy(msg,line);
+    fclose(sfp);
+  }
+  return score;
 }
 
 int evaluator::test(int c, char* msg)
@@ -433,7 +471,8 @@ bool evaluator::fetchandcompile(char *user_id, int sub_num,
     writecompilemsg("Cannot determine language used. Check your program header.\n");
     return false;
   } else {
-    chdir("test");
+    if(chdir("test")!=0)
+      printf("Error: 'test' directory not found.  Please create it.\n");
     if(lang==EV_LANG_C)
       sprintf(cmd,comp_config.c_compilation_command,
 	      prob_id,prob_id,prob_id);

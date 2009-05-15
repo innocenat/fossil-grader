@@ -30,6 +30,7 @@ private:
   
   int language;
   
+  int verify(char *vname, int c, char *msg);
   int test(int c, char* msg);
   void copytestcase(int c);
   // int copyandcompile(char* id, char* sect, int subnum);
