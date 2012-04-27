@@ -1,0 +1,30 @@
+How to install
+==============
+
+You can use the binary grader.exe.  If you want to change it youself, see how to compile grader.exe below.
+
+1. Get the web submission working first.
+2. Edit grader.conf (see example from grader.conf.SAMPLE)
+   - Add database config
+   - Check command line for compilation, especially on paths
+3. Edit test data (by default they are in ev/, see example in ev/add)
+4. Make sure you set paths correctly.
+   - Make sure you have libmysql.dll on the path, or you can just copy it from mysql dir to grader's dir.
+   - If you want to use Turbo C, make sure tlink.exe is on the path.
+   - To change path settings, go to Settings -> Control Panel -> System -> Advanced -> Environment Variables
+     Then add the required paths in PATH variable.  
+     For example, if you want to add Turbo C bin path, you can put "C:\TC\BIN;" in front of all other paths,
+     if your Turbo C executables, e.g., tcc.exe and tlink.exe are in C:\TC\BIN.     
+5. Start grader by calling grader.exe
+
+If you make any changes on the config, don't forget to restart the grader.  (Restart it using the usual way: Ctrl-C.)
+   
+How to build using Bloodshed Dev-C++
+====================================
+
+(to be written)
+
+1. Get required libraries
+
+  - MySQL Client Library
+
