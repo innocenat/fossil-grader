@@ -35,5 +35,5 @@ evaluate.o: evaluate.cpp
 db_interface.o: db_interface.cpp
 	$(CPP) -c db_interface.cpp -o db_interface.o $(CXXFLAGS)
 
-execute.o: execute.c
-	$(CPP) -c execute.c -o execute.o $(CXXFLAGS)
+execute.o: execute.cpp
+	$(CPP) -c execute.cpp -o execute.o $(CXXFLAGS)
