@@ -7,12 +7,12 @@ WINDRES = windres.exe
 RES  = 
 OBJ  = grader.o evaluate.o db_interface.o execute.o $(RES)
 LINKOBJ  = grader.o evaluate.o db_interface.o execute.o $(RES)
-LIBS =  -lpsapi -lmysql  -g3 
-INCS =  -I"C:/Dev-Cpp/include"  -I"C:/Program Files/MySQL/MySQL Server 5.0/include" 
-CXXINCS =  -I"C:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/Dev-Cpp/include/c++/3.4.2/backward"  -I"C:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.2"  -I"C:/Dev-Cpp/include"  -I"C:/Program Files/MySQL/MySQL Server 5.0/include" 
+LIBS =  -L"E:/Dev-Cpp/lib" -lmysql  -g3 -lpsapi
+INCS =  -I"E:/Dev-Cpp/include"  -I"E:/Dev-Cpp/include/mysql" 
+CXXINCS =  -I"E:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"E:/Dev-Cpp/include/c++/3.4.2/backward"  -I"E:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"E:/Dev-Cpp/include/c++/3.4.2"  -I"E:/Dev-Cpp/include"  -I"E:/Dev-Cpp/include/mysql" 
 BIN  = grader.exe
-CXXFLAGS = $(CXXINCS) -DON_WINDOWS   -g3
-CFLAGS = $(INCS) -DON_WINDOWS   -g3
+CXXFLAGS = $(CXXINCS) -DON_WINDOWS   -D ON_WINDOWS -g3
+CFLAGS = $(INCS) -DON_WINDOWS   -D ON_WINDOWS -g3
 RM = rm -f
 
 .PHONY: all all-before all-after clean clean-custom
@@ -35,5 +35,5 @@ evaluate.o: evaluate.cpp
 db_interface.o: db_interface.cpp
 	$(CPP) -c db_interface.cpp -o db_interface.o $(CXXFLAGS)
 
-execute.o: execute.c
-	$(CPP) -c execute.c -o execute.o $(CXXFLAGS)
+execute.o: execute.cpp
+	$(CPP) -c execute.cpp -o execute.o $(CXXFLAGS)
