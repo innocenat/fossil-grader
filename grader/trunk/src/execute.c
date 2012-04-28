@@ -288,6 +288,10 @@ int execute(char *exname, char *inname, char *outname, double t, int max_mem)
     }
   //fprintf(stderr,"Process ID: %ld\n",pi.dwProcessId);
   //fprintf(stderr,"time limit = %d\n",t);
+
+  SetProcessWorkingSetSize(pi.hProcess,
+			   1,
+			   max_mem);
   
   // checking memory usage
   // wait 0.1 sec before checking mem usage
