@@ -1,0 +1,33 @@
+CPP  = g++
+CC   = gcc
+CFLAGS = 
+CPPFLAGS = 
+
+.PHONY: all clean
+
+all: grader
+
+clean: 
+	rm *.o grader trun
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o "grader.exe" $(LIBS)
+
+grader: grader.o evaluate.o db_interface.o execute_linux.o
+	$(CPP) -o grader $(CPPFLAGS) grader.o evaluate.o db_interface.o execute_linux.o -lmysqlclient
+
+trun: trun.o execute_linux.o
+	$(CPP) -o trun $(CPPFLAGS) trun.o execute_linux.o
+
+grader.o: grader.cpp db_interface.h evaluate.h execute.h 
+
+evaluate.o: evaluate.cpp evaluate.h
+
+db_interface.o: db_interface.cpp db_interface.h
+
+execute_linux.o: execute_linux.cpp execute.h
+
+trun.o: trun.cpp
+
+%.o : %.cpp
+	$(CPP) -c $(CPPFLAGS) $< -o $@

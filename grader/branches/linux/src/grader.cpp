@@ -1,7 +1,9 @@
 #include "db_interface.h"
 #include "evaluate.h"
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <unistd.h>
 
 #define CONFIG_FILE  "grader.conf"
 
@@ -173,7 +175,7 @@ void stopgrader()
 {
   FILE *fp = fopen("exit","w");
   fclose(fp);
-  Sleep(2000);
+  sleep(2);
   remove("exit");
 }
 
@@ -184,7 +186,7 @@ void gradequeue()
   int counter = 0;
   while(1) {
     gradequeue(db);
-    Sleep(1000);
+    sleep(1);
     if(checkexit())
       break;
     printf("%c\r",moving_icon[counter]);

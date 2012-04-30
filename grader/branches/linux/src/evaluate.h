@@ -3,7 +3,7 @@
 
 #include "db_interface.h"
 
-#define MSVC
+//#define MSVC
 
 #define KEEP_COMPILE_MSG  1
 
