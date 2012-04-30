@@ -1,0 +1,35 @@
+How to get the grader working in Linux
+--------------------------------------
+
+1. You need the sandbox software developed for IOI by Martin Mares.
+It is not included in this distribution because of the license
+conflict (MIT License and GPLv2).  Compile and put it in as box in ev/
+directory.
+
+1.1 How to obtain the sandbox
+
+While the current sandbox is a slight modification of the one
+developed by Martin Mares, its interface has been modified so that the
+current version of the sandbox from the original source does not work
+with our implementation.
+
+Download the source from:
+https://gitorious.org/cafe-grader/cafe-grader-judge-scripts/blobs/raw/master/std-script/box.cc
+
+This works only for 32-bit servers.
+
+(Again this is a license conflit, but we once had Martin permission to
+redistribute the code with the MIT license in that project.)
+
+2. Make the grader
+
+Call:
+make -f Makefile.linux
+
+You should get the executable "grader" which can be copied to the root
+of the grader directory (where ev/, test/, test-res/ are).
+
+3. Default comparator
+
+It is still 'scomp.exe'; so when you compile comparator/scomp.cc, make
+sure the executable you put into ev/ should be named scomp.exe.

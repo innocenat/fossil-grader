@@ -6,7 +6,7 @@
 #endif
 
 #include <stdio.h>
-#include <mysql.h>
+#include <mysql/mysql.h>
 
 #define SUBSTATUS_UNDEFINED   0
 #define SUBSTATUS_INQUEUE     1

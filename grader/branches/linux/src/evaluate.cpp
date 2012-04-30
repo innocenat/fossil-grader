@@ -1,9 +1,12 @@
 #include "evaluate.h"
+#include "execute.h"
+#include "db_interface.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "execute.h"
-#include "db_interface.h"
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #ifdef MSVC
 // strange commands...
@@ -24,6 +27,13 @@
 #else
 
 #define DEFAULT_EVDIR "ev/"
+#define COPYINCMD	"cp %s%s/%d.in test > /dev/null"
+#define COPYSOLCMD      "cp %s%s/%d.sol test > /dev/null"
+#define MOVEOLDTESTCMD  "cp -f test/*.* old-test > /dev/null"
+#define DELTESTDIR      "rm -f test/*.*"
+#define TESTRES_CREATDIR	"mkdir test-res/%s/%s > /dev/null"
+#define TESTRES_CPOUTPUT	"cp -f test/*.out test-res/%s/%s > /dev/null"
+#define TESTRES_COMPMSG		"cp -f test/compile.msg test-res/%s/%s > /dev/null"
 
 #endif
 
@@ -195,7 +205,7 @@ void evaluator::readconf(char* pname)
       fullscore=casecount;
     fclose(fp);
   } else {
-    printf("Warning: config file for problem %s not found.\n");
+    printf("Warning: config file for problem %s not found.\n",pname);
     casecount = fullscore = 0;
   }
 }
@@ -221,7 +231,7 @@ int evaluator::verify(char *vname, int c, char *msg)
   if(!iffileexist(vname))
     printf("comparator not found, looking for: %s\n",vname);
   else
-    execute(cmd,"-",scorename,100);
+    execute(cmd,"/dev/null",scorename,100);
   
   sfp = fopen(scorename,"r");
   score=0;
@@ -239,11 +249,12 @@ int evaluator::verify(char *vname, int c, char *msg)
 int evaluator::test(int c, char* msg)
 {
   //This function is executed inside "./test/"
-  char inname[10];
-  char outname[10];
-  char solname[10];
-  char evfullname[20];
+  char inname[100];
+  char outname[100];
+  char solname[100];
+  char evfullname[200];
   int exres;
+
   
   sprintf(inname,"%d.in",c);
   sprintf(outname,"%d.out",c);
@@ -271,6 +282,10 @@ int evaluator::test(int c, char* msg)
     strcpy(msg,"T");
     return 0;
   } else if(exres==EXE_RESULT_MEMORY) {
+    strcpy(msg,"x");
+    return 0;
+  } else {
+    // misc error returns x
     strcpy(msg,"x");
     return 0;
   }
@@ -345,11 +360,11 @@ void evaluator::copyoutput(char *user_id, int compiler_index)
   char foutname[100];
   
   sprintf(dir,"test-res/%s",user_id);
-  mkdir(dir);
+  mkdir(dir,0700);
   sprintf(dir,"test-res/%s/%s",user_id,prob_id);
-  mkdir(dir);
+  mkdir(dir,0700);
   sprintf(dir,"test-res/%s/%s/%d",user_id,prob_id,compiler_index);
-  mkdir(dir);
+  mkdir(dir,0700);
   for(int i=0; i<casecount; i++) {
     sprintf(finname,"test/%d.out",i+1);
     sprintf(foutname,"test-res/%s/%s/%d/%d.out",
@@ -481,10 +496,10 @@ bool evaluator::fetchandcompile(char *user_id, int sub_num,
       sprintf(cmd,comp_config.cpp_compilation_command,
 	      prob_id,prob_id,prob_id);
     }
-    //printf("command line: %s\n",cmd);
+    printf("command line: %s\n",cmd);
     system(cmd);
     chdir("..");
-    sprintf(exname,"test\\%s.exe",prob_id);
+    sprintf(exname,"test/%s",prob_id);
     if(iffileexist(exname)) {
       appendcompilemsg("\n---------------------------\nCompiled successfully.\n");
       return true;
@@ -535,7 +550,7 @@ int evaluator::evaluate(char* user_id, int sub_num, char *mlog)
       best_score = score;
 
     copyoutput(user_id,c);
-    cleartestdir();
+    //cleartestdir();
     
     if(compiler_count!=1)
       sprintf(msg_with_name,"%s[%s]",compiler_configs[c].name,msg);

@@ -1,8 +1,8 @@
-#include <windows.h>
+//#include <windows.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <mysql.h>
+#include <mysql/mysql.h>
 #include "db_interface.h"
 
 int getsubstatus(char *user_id, char *prob_id)
@@ -283,7 +283,7 @@ DB *connect_db(char* dbname, char* username, char* password)
      mysql_real_connect(myData, NULL, username, password, 
 			NULL, MYSQL_PORT, NULL, 0)) {
     if (mysql_select_db(myData, dbname) < 0 ) {
-      printf("Can't select the %s database ioi\n");
+      printf("Can't select the %s database ioi\n",dbname);
       mysql_close( myData ) ;
       return NULL;
     }
