@@ -1,3 +1,5 @@
 cases: 5
 evaluator: ../scomp.exe
 timelimit: 1
+memorylimit: 16777216
+
