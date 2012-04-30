@@ -550,7 +550,7 @@ int evaluator::evaluate(char* user_id, int sub_num, char *mlog)
       best_score = score;
 
     copyoutput(user_id,c);
-    //cleartestdir();
+    cleartestdir();
     
     if(compiler_count!=1)
       sprintf(msg_with_name,"%s[%s]",compiler_configs[c].name,msg);
